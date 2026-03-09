@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pin Monitor Proyect</title>
+    <style>
+        body { background: #1a1a1a; color: white; font-family: sans-serif; text-align: center; }
+        canvas { background: #000; border: 2px solid #444; width: 80%; height: 300px; }
+        .data-card { font-size: 2em; color: #00ff00; margin: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Monitor en Tiempo Real - Proyecto Niños</h1>
+    <div class="data-card">Amplitud: <span id="val">0</span></div>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        // CAMBIA ESTO POR LA IP QUE SALGA EN TU SERIAL MONITOR
+        const ip = "192.168.x.xxx"; 
+        const socket = new WebSocket(`ws://${ip}:81`);
+        
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const valSpan = document.getElementById('val');
+        let dataArray = new Array(100).fill(0);
+
+        socket.onmessage = function(event) {
+            const num = parseInt(event.data);
+            valSpan.innerText = num;
+            
+            // Actualizar gráfica
+            dataArray.push(num);
+            dataArray.shift();
+            draw();
+        };
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#00ff00';
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height/2);
+            
+            for(let i=0; i<dataArray.length; i++) {
+                const x = (canvas.width / dataArray.length) * i;
+                const y = (canvas.height/2) + (dataArray[i] / 10);
+                ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+    </script>
+</body>
+</html>
